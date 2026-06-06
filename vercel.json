@@ -2,5 +2,8 @@
   "buildCommand": "flutter pub get && flutter build web --release",
   "outputDirectory": "build/web",
   "installCommand": "flutter pub get",
-  "framework": null
+  "framework": null,
+  "env": {
+    "FLUTTER_ROOT": "/vercel/path0/flutter"
+  }
 }
