@@ -1,6 +1,6 @@
 {
-  "buildCommand": "bash -c 'git clone https://github.com/flutter/flutter.git --depth 1 --branch stable ~/flutter && export PATH=\"$PATH:~/flutter/bin\" && flutter pub get && flutter build web --release'",
+  "buildCommand": "bash -c 'curl -sL https://getflutter.dev | bash && export PATH=\"$PATH:/root/flutter/bin\" && flutter pub get && flutter build web --release'",
   "outputDirectory": "build/web",
-  "installCommand": "echo 'Installing Flutter...'",
+  "installCommand": "echo 'Preparing Flutter...'",
   "framework": null
 }
