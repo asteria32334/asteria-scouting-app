@@ -1,91 +1,96 @@
 # Asteria Scouting App
 
-**An Open Source Scouting Application for FTC Teams**
+**Open Source Scouting Platform for FTC Teams**
 
-Developed by **Asteria Robotics #32334** to help teams collect fast, reliable, and organized scouting data during competitions.
+Developed by **Asteria Robotics #32334** to help teams collect fast, organized, and reliable scouting data during competitions and qualifiers.
 
-![App Preview](https://via.placeholder.com/800x400?text=Asteria+Scouting+App+Preview)
+![Banner](https://via.placeholder.com/1200x400/0F172A/00D4FF?text=Asteria+Scouting+App)
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- Simple name-based login
-- Match & Team Number input
-- Scoring system (1-100 points)
-- Multiple photo support
-- View your own scouting records
-- Edit and delete your records
-- **Admin Panel** with:
-  - Team ranking by average score
-  - All scouting records
-  - Photo preview in pop-up
+- **Simple & Fast Login** — Just enter your name
+- **Comprehensive Scouting Form** — Match number, team number, score (1-100), detailed notes
+- **Multiple Photo Support** — Add as many photos as you want per entry
+- **My Records** — View, edit, and delete your own scouting entries
+- **Admin Panel** — 
+  - Real-time team rankings by average score
+  - View all scouting data
+  - Photo preview in detailed pop-up
+- **Fully Responsive** — Works great on phones, tablets, and computers
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the Repository
+### Prerequisites
+- Flutter SDK installed
+- A Supabase account (free)
+
+### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/asteria32334/asteria-scouting-app.git
 cd asteria-scouting-app/asteria_scouting
 
-2. Install Dependencies
-Bashflutter pub get
-3. Configure Supabase
-Open lib/main.dart and update these lines with your own Supabase project credentials:
-Darturl: 'https://YOUR-PROJECT-ID.supabase.co',
-anonKey: 'YOUR-ANON-PUBLIC-KEY',
-4. Run the App
-Bashflutter run -d web-server
+# Install dependencies
+flutter pub get
 
-📱 How to Use
-Regular Users
+# Run the app
+flutter run -d web-server
 
-Enter your name
-Click "Scouting Yapmaya Başla"
-Fill in Match Number, Team Number, Score (1-100), and Notes
-Add photos (optional - multiple supported)
-Click Save
+📋 Supabase Setup (Required)
 
-View Your Records
+Go to supabase.com and create a new project
+Create table scouting_reports with the following columns:
 
-Click the history icon (📜) in the top right
-
-Admin Access
-
-On the login screen, use password: asteria2026
-You can view team rankings and all records
-
-
-🗄️ Supabase Setup (For Other Teams)
-
-Create a project at supabase.com
-Create table scouting_reports with these columns:
-Column Name,Type,Nullable
-id,uuid,No
-match_number,int4,Yes
-team_number,int4,Yes
-score,int4,Yes
-notes,text,Yes
-scouted_by,text,Yes
-photo_url,text,Yes
-created_at,timestamptz,Yes
-
+Column Name,   Type,    Nullable,   Description
+id,           uuid,         No,      Primary Key
+match_number, int4,        Yes,    Match number
+team_number, int4,         Yes,    Team number
+score,       int4,         Yes,    Score (1-100)
+notes,       text,         Yes,    Notes
+scouted_by,  text,         Yes,    Scout name
+photo_url,   text,         Yes,    Photo URLs (comma separated)
+created_at,  timestamptz,  Yes,    Timestamp
 
 In Storage, create a public bucket named scouting_photos
+
+🔑 Default Admin Password
+Password: asteria2026
+(You can change this in the code)
+
+📱 How to Use
+For Scouts
+
+Enter your name
+Fill in match and team information
+Give a score between 1-100
+Add notes and photos (optional)
+Click Save
+
+For Team Leaders (Admin)
+
+Use the admin password on the login screen
+View team rankings
+Browse all scouting data with photos
 
 
 🤝 Contributing
 We welcome contributions from the FTC community!
 
 Fork the project
-Create your feature branch (git checkout -b feature/amazing-feature)
+Create a feature branch (git checkout -b feature/amazing-feature)
 Commit your changes (git commit -m 'Add amazing feature')
 Push to the branch (git push origin feature/amazing-feature)
 Open a Pull Request
 
 
 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License — feel free to use, modify, and distribute.
+
+🙏 Acknowledgments
+
+All FTC teams who inspired this project
