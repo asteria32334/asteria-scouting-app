@@ -14,12 +14,18 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  @override Widget build(BuildContext context) => MaterialApp(
-    title: 'Asteria Scouting',
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData.dark().copyWith(primaryColor: Colors.blue, scaffoldBackgroundColor: const Color(0xFF0F172A)),
-    home: const LoginPage(),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Asteria Scouting',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        primaryColor: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+      ),
+      home: const LoginPage(),
+    );
+  }
 }
 
 // ====================== GİRİŞ ======================
@@ -43,12 +49,15 @@ class _LoginPageState extends State<LoginPage> {
             const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'İsminiz', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: () {
-              if (_nameController.text.trim().isNotEmpty) {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
-              }
-            }, child: const Text('Scouting Yapmaya Başla')),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                if (_nameController.text.trim().isNotEmpty) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
+                }
+              },
+              child: const Text('Scouting Yapmaya Başla', style: TextStyle(fontSize: 18)),
+            ),
             const SizedBox(height: 40),
             const Text("Admin Girişi"),
             TextField(controller: _adminPass, decoration: const InputDecoration(labelText: 'Admin Şifresi', border: OutlineInputBorder()), obscureText: true),
@@ -88,6 +97,17 @@ class _ScoutingPageState extends State<ScoutingPage> {
         setState(() => selectedImages.add(bytes));
       }
     }
+  }
+
+  void clearForm() {
+    setState(() {
+      matchNumber = '';
+      teamNumber = '';
+      score = '';
+      notes = '';
+      selectedImages = [];
+      editingId = null;
+    });
   }
 
   @override
@@ -184,14 +204,7 @@ class _ScoutingPageState extends State<ScoutingPage> {
 
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Kaydedildi!')));
 
-                    setState(() {
-                      matchNumber = '';
-                      teamNumber = '';
-                      score = '';
-                      notes = '';
-                      selectedImages = [];
-                      editingId = null;
-                    });
+                    clearForm(); // Formu tamamen temizle
                   },
                   child: Text(editingId != null ? 'Güncelle' : 'Kaydet', style: const TextStyle(fontSize: 18)),
                 ),
