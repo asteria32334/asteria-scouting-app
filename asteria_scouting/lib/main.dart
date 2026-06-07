@@ -14,18 +14,12 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Asteria Scouting',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-      ),
-      home: const LoginPage(),
-    );
-  }
+  @override Widget build(BuildContext context) => MaterialApp(
+    title: 'Asteria Scouting',
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData.dark().copyWith(primaryColor: Colors.blue, scaffoldBackgroundColor: const Color(0xFF0F172A)),
+    home: const LoginPage(),
+  );
 }
 
 // ====================== GİRİŞ ======================
@@ -49,15 +43,12 @@ class _LoginPageState extends State<LoginPage> {
             const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'İsminiz', border: OutlineInputBorder())),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                if (_nameController.text.trim().isNotEmpty) {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
-                }
-              },
-              child: const Text('Scouting Yapmaya Başla', style: TextStyle(fontSize: 18)),
-            ),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: () {
+              if (_nameController.text.trim().isNotEmpty) {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
+              }
+            }, child: const Text('Scouting Yapmaya Başla')),
             const SizedBox(height: 40),
             const Text("Admin Girişi"),
             TextField(controller: _adminPass, decoration: const InputDecoration(labelText: 'Admin Şifresi', border: OutlineInputBorder()), obscureText: true),
@@ -99,30 +90,12 @@ class _ScoutingPageState extends State<ScoutingPage> {
     }
   }
 
-  void clearForm() {
-    setState(() {
-      matchNumber = '';
-      teamNumber = '';
-      score = '';
-      notes = '';
-      selectedImages = [];
-      editingId = null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Merhaba, ${widget.userName}'),
         actions: [
-          // Yeni Scouting Butonu
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, size: 28),
-            tooltip: 'Yeni Scouting',
-            onPressed: clearForm,
-          ),
-          // Geçmiş Kayıtlar
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () async {
@@ -211,7 +184,14 @@ class _ScoutingPageState extends State<ScoutingPage> {
 
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Kaydedildi!')));
 
-                    clearForm(); // Formu temizle
+                    setState(() {
+                      matchNumber = '';
+                      teamNumber = '';
+                      score = '';
+                      notes = '';
+                      selectedImages = [];
+                      editingId = null;
+                    });
                   },
                   child: Text(editingId != null ? 'Güncelle' : 'Kaydet', style: const TextStyle(fontSize: 18)),
                 ),
@@ -251,7 +231,7 @@ class MyScoutsPage extends StatelessWidget {
                   title: Text('Maç ${item['match_number']} - Takım ${item['team_number']}'),
                   subtitle: Text(item['notes']?.toString() ?? ''),
                   trailing: Text('${item['score']} Puan', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  onTap: () => Navigator.pop(context, item), // Düzenleme
+                  onTap: () => Navigator.pop(context, item),
                   onLongPress: () {
                     showDialog(
                       context: context,
