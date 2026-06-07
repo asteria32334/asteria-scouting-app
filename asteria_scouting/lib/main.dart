@@ -116,6 +116,13 @@ class _ScoutingPageState extends State<ScoutingPage> {
       appBar: AppBar(
         title: Text('Merhaba, ${widget.userName}'),
         actions: [
+          // Yeni Scouting Butonu
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, size: 28),
+            tooltip: 'Yeni Scouting',
+            onPressed: clearForm,
+          ),
+          // Geçmiş Kayıtlar
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () async {
@@ -204,7 +211,7 @@ class _ScoutingPageState extends State<ScoutingPage> {
 
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Kaydedildi!')));
 
-                    clearForm(); // Formu tamamen temizle
+                    clearForm(); // Formu temizle
                   },
                   child: Text(editingId != null ? 'Güncelle' : 'Kaydet', style: const TextStyle(fontSize: 18)),
                 ),
@@ -244,7 +251,7 @@ class MyScoutsPage extends StatelessWidget {
                   title: Text('Maç ${item['match_number']} - Takım ${item['team_number']}'),
                   subtitle: Text(item['notes']?.toString() ?? ''),
                   trailing: Text('${item['score']} Puan', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  onTap: () => Navigator.pop(context, item),
+                  onTap: () => Navigator.pop(context, item), // Düzenleme
                   onLongPress: () {
                     showDialog(
                       context: context,
