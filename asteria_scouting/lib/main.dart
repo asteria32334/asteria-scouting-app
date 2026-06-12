@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,12 +15,18 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  @override Widget build(BuildContext context) => MaterialApp(
-    title: 'Asteria Scouting',
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData.dark().copyWith(primaryColor: Colors.blue, scaffoldBackgroundColor: const Color(0xFF0F172A)),
-    home: const LoginPage(),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Asteria Scouting',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        primaryColor: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+      ),
+      home: const LoginPage(),
+    );
+  }
 }
 
 // ====================== GİRİŞ ======================
@@ -43,12 +50,15 @@ class _LoginPageState extends State<LoginPage> {
             const Text('Hoş Geldin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'İsminiz', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: () {
-              if (_nameController.text.trim().isNotEmpty) {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
-              }
-            }, child: const Text('Scouting Yapmaya Başla')),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                if (_nameController.text.trim().isNotEmpty) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ScoutingPage(userName: _nameController.text.trim())));
+                }
+              },
+              child: const Text('Scouting Yapmaya Başla', style: TextStyle(fontSize: 18)),
+            ),
             const SizedBox(height: 40),
             const Text("Admin Girişi"),
             TextField(controller: _adminPass, decoration: const InputDecoration(labelText: 'Admin Şifresi', border: OutlineInputBorder()), obscureText: true),
