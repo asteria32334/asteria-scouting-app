@@ -19,37 +19,35 @@
   </nav>
 
   <main class="container">
-    <!-- Maç & Takım Bilgileri -->
     <div class="glass-card">
       <div class="section-title">
         <span id="formModeTitle">Yeni Maç Raporu</span>
-        <button id="cancelEditBtn" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEdit()">Düzenlemeyi İptal Et</button>
+        <button id="cancelEditBtn" class="btn btn-danger btn-sm" style="display:none;" onclick="cancelEdit()">İptal Et</button>
       </div>
 
       <div class="form-grid">
         <div class="form-group">
           <label for="matchNumber">Maç No</label>
-          <input type="number" id="matchNumber" placeholder="12">
+          <input type="number" id="matchNumber" placeholder="12" oninput="checkMatchNumber()">
         </div>
         <div class="form-group">
           <label for="teamNumber">Takım No</label>
           <input type="number" id="teamNumber" placeholder="32334">
         </div>
         <div class="form-group">
-          <label for="score">Genel Puan (1-100)</label>
+          <label for="score" id="scoreLabel">Genel Puan (1-100)</label>
           <input type="number" id="score" placeholder="85">
         </div>
       </div>
     </div>
 
-    <!-- BioBuzz Otonom & TeleOp Sayaçları -->
+    <!-- BioBuzz Sayaçları -->
     <div class="glass-card">
       <div class="tabs">
         <button type="button" class="tab-btn active" onclick="switchPhase('auto', this)">Otonom (Auto)</button>
         <button type="button" class="tab-btn" onclick="switchPhase('teleop', this)">TeleOp</button>
       </div>
 
-      <!-- Otonom Paneli -->
       <div id="panel-auto" class="tab-panel active">
         <div class="counter-grid">
           <div class="tap-card hive" onclick="changeCount('autoHive', 1)">
@@ -59,7 +57,6 @@
             <div class="tap-count" id="val-autoHive">0</div>
             <div class="tap-hint">+1 eklemek için dokun</div>
           </div>
-
           <div class="tap-card flower" onclick="changeCount('autoFlower', 1)">
             <button type="button" class="minus-btn" onclick="event.stopPropagation(); changeCount('autoFlower', -1)">−</button>
             <div class="tap-icon">✿</div>
@@ -70,7 +67,6 @@
         </div>
       </div>
 
-      <!-- TeleOp Paneli -->
       <div id="panel-teleop" class="tab-panel">
         <div class="counter-grid">
           <div class="tap-card hive" onclick="changeCount('teleHive', 1)">
@@ -80,7 +76,6 @@
             <div class="tap-count" id="val-teleHive">0</div>
             <div class="tap-hint">+1 eklemek için dokun</div>
           </div>
-
           <div class="tap-card flower" onclick="changeCount('teleFlower', 1)">
             <button type="button" class="minus-btn" onclick="event.stopPropagation(); changeCount('teleFlower', -1)">−</button>
             <div class="tap-icon">✿</div>
@@ -97,19 +92,16 @@
       </div>
     </div>
 
-    <!-- Notlar & Fotoğraflar -->
     <div class="glass-card">
       <div class="form-group">
         <label for="notes">Gözlem Notları</label>
-        <textarea id="notes" rows="4" placeholder="Robot hızı, intake performansı, savunma vb..."></textarea>
+        <textarea id="notes" rows="4" placeholder="Pit gözlemleri, robot performansı..."></textarea>
       </div>
 
       <div class="form-group" style="margin-bottom: 0;">
-        <label>Robot Fotoğrafları (Birden Fazla Seçilebilir)</label>
+        <label>Robot Fotoğrafları</label>
         <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
-        <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('photoInput').click()">
-          📷 Fotoğraf Ekle
-        </button>
+        <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('photoInput').click()">📷 Fotoğraf Ekle</button>
         <div id="photoPreview" class="photo-grid"></div>
       </div>
     </div>
@@ -126,14 +118,8 @@
 
     let editingId = null;
     let selectedFiles = [];
-    const counts = {
-      autoHive: 0,
-      autoFlower: 0,
-      teleHive: 0,
-      teleFlower: 0
-    };
+    const counts = { autoHive: 0, autoFlower: 0, teleHive: 0, teleFlower: 0 };
 
-    // Düzenleme modunda gelindiyse formu doldur
     const editRaw = localStorage.getItem('asteria_edit_record');
     if (editRaw) {
       const rec = JSON.parse(editRaw);
@@ -145,13 +131,30 @@
       document.getElementById('teamNumber').value = rec.team_number ?? '';
       document.getElementById('score').value = rec.score ?? '';
 
-      const parsed = parseBioBuzzNotes(rec.notes);
-      counts.autoHive = parsed.autoHive;
-      counts.autoFlower = parsed.autoFlower;
-      counts.teleHive = parsed.teleHive;
-      counts.teleFlower = parsed.teleFlower;
-      document.getElementById('notes').value = parsed.cleanNotes;
+      counts.autoHive = rec.auto_hive || 0;
+      counts.autoFlower = rec.auto_flower || 0;
+      counts.teleHive = rec.tele_hive || 0;
+      counts.teleFlower = rec.tele_flower || 0;
+      document.getElementById('notes').value = rec.notes || '';
       updateCounterUI();
+      checkMatchNumber();
+    }
+
+    function checkMatchNumber() {
+      const matchVal = document.getElementById('matchNumber').value.trim();
+      const scoreInput = document.getElementById('score');
+      const scoreLabel = document.getElementById('scoreLabel');
+
+      if (matchVal === '0') {
+        scoreInput.value = '';
+        scoreInput.disabled = true;
+        scoreInput.style.opacity = '0.4';
+        scoreLabel.textContent = 'Genel Puan (Maç No 0 için Gerekmez)';
+      } else {
+        scoreInput.disabled = false;
+        scoreInput.style.opacity = '1';
+        scoreLabel.textContent = 'Genel Puan (1-100)';
+      }
     }
 
     function switchPhase(phase, btn) {
@@ -166,7 +169,7 @@
       const el = document.getElementById(`val-${key}`);
       el.textContent = counts[key];
       el.classList.remove('bump');
-      void el.offsetWidth; // reflow
+      void el.offsetWidth;
       el.classList.add('bump');
       setTimeout(() => el.classList.remove('bump'), 150);
       updateSummaryStrip();
@@ -205,12 +208,17 @@
     }
 
     async function saveReport() {
-      const matchNumber = document.getElementById('matchNumber').value;
-      const teamNumber = document.getElementById('teamNumber').value;
-      const score = document.getElementById('score').value;
-      const rawNoteText = document.getElementById('notes').value;
+      const matchNumber = document.getElementById('matchNumber').value.trim();
+      const teamNumber = document.getElementById('teamNumber').value.trim();
+      const score = document.getElementById('score').value.trim();
+      const noteText = document.getElementById('notes').value.trim();
 
-      if (!score) {
+      if (matchNumber === '') {
+        showToast('Lütfen maç numarası girin.');
+        return;
+      }
+
+      if (matchNumber !== '0' && !score) {
         showToast('Lütfen genel puan girin.');
         return;
       }
@@ -230,12 +238,15 @@
           }
         }
 
-        const formattedNotes = formatBioBuzzNotes(counts, rawNoteText);
         const payload = {
-          match_number: matchNumber ? parseInt(matchNumber, 10) : null,
+          match_number: parseInt(matchNumber, 10),
           team_number: teamNumber ? parseInt(teamNumber, 10) : null,
-          score: parseInt(score, 10),
-          notes: formattedNotes
+          score: matchNumber === '0' ? null : parseInt(score, 10),
+          notes: noteText,
+          auto_hive: counts.autoHive,
+          auto_flower: counts.autoFlower,
+          tele_hive: counts.teleHive,
+          tele_flower: counts.teleFlower
         };
 
         if (photoUrls.length > 0) {
@@ -246,7 +257,7 @@
           const { error } = await sb.from('scouting_reports').update(payload).eq('id', editingId);
           if (error) throw error;
           localStorage.removeItem('asteria_edit_record');
-          showToast('✅ Kayıt güncellendi!');
+          showToast('✅ Güncellendi!');
         } else {
           payload.scouted_by = userName;
           payload.created_at = new Date().toISOString();
@@ -258,7 +269,7 @@
         setTimeout(() => window.location.reload(), 900);
       } catch (err) {
         console.error(err);
-        showToast('Hata oluştu: ' + err.message);
+        showToast('Hata: ' + err.message);
         btn.disabled = false;
         btn.textContent = editingId ? 'Güncelle' : 'Kaydet';
       }
