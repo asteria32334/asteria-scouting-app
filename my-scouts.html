@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asteria Scouting - Kayıtlarım</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Benim Scoutinglarım</div>
+    <div class="nav-actions">
+      <a href="scouting.html" class="btn btn-primary btn-sm">+ Yeni Kayıt</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div id="reportsList">
+      <p style="text-align:center; color:var(--text-muted);">Yükleniyor...</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    const userName = localStorage.getItem('asteria_scout_name');
+    if (!userName) window.location.href = 'index.html';
+
+    let myRecords = [];
+
+    async function loadMyReports() {
+      const container = document.getElementById('reportsList');
+      const { data, error } = await sb
+        .from('scouting_reports')
+        .select('*')
+        .eq('scouted_by', userName.trim())
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        container.innerHTML = `<p style="color:var(--danger);">Hata: ${error.message}</p>`;
+        return;
+      }
+
+      myRecords = data || [];
+      if (myRecords.length === 0) {
+        container.innerHTML = `<div class="glass-card" style="text-align:center; color:var(--text-muted);">Henüz scouting kaydın yok.</div>`;
+        return;
+      }
+
+      container.innerHTML = myRecords.map((item, idx) => {
+        const parsed = parseBioBuzzNotes(item.notes);
+        return `
+          <div class="report-card">
+            <div style="flex:1;">
+              <div class="report-header">Maç ${item.match_number ?? '-'} — Takım ${item.team_number ?? '-'}</div>
+              <div class="tag-row">
+                <span class="tag tag-score">${item.score} Puan</span>
+                <span class="tag tag-hive">Otonom: ${parsed.autoHive}H / ${parsed.autoFlower}F</span>
+                <span class="tag tag-flower">TeleOp: ${parsed.teleHive}H / ${parsed.teleFlower}F</span>
+              </div>
+              <p style="font-size:0.88rem; color:var(--text-muted);">${parsed.cleanNotes || 'Not eklenmemiş'}</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="editRecord(${idx})">Düzenle</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteRecord('${item.id}')">Sil</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function editRecord(index) {
+      localStorage.setItem('asteria_edit_record', JSON.stringify(myRecords[index]));
+      window.location.href = 'scouting.html';
+    }
+
+    async function deleteRecord(id) {
+      if (!confirm('Bu kaydı silmek istediğinden emin misin?')) return;
+      const { error } = await sb.from('scouting_reports').delete().eq('id', id);
+      if (error) {
+        showToast('Silinemedi: ' + error.message);
+      } else {
+        showToast('Kayıt silindi');
+        loadMyReports();
+      }
+    }
+
+    loadMyReports();
+  </script>
+</body>
+</html>

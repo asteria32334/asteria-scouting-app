@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asteria Scouting - Admin Paneli</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span>Admin Paneli</span>
+      <span class="nav-badge">Asteria 32334</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="logoutAdmin()">Çıkış</button>
+    </div>
+  </nav>
+
+  <main class="container-wide">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchAdminTab('ranking', this)">Takım Sıralaması</button>
+      <button class="tab-btn" onclick="switchAdminTab('all', this)">Tüm Kayıtlar (Takım Gruplu)</button>
+    </div>
+
+    <!-- Takım Sıralaması Paneli -->
+    <div id="tab-ranking" class="tab-panel active">
+      <div id="rankingList">Yükleniyor...</div>
+    </div>
+
+    <!-- Gruplanmış Tüm Kayıtlar Paneli -->
+    <div id="tab-all" class="tab-panel">
+      <div id="allReportsList">Yükleniyor...</div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    if (sessionStorage.getItem('asteria_admin_auth') !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('asteria_admin_auth');
+      window.location.href = 'index.html';
+    }
+
+    function switchAdminTab(tabName, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    async function loadAdminData() {
+      const { data, error } = await sb
+        .from('scouting_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        document.getElementById('rankingList').innerHTML = `<p style="color:var(--danger);">Hata: ${error.message}</p>`;
+        return;
+      }
+
+      const reports = data || [];
+      const teamsMap = {};
+      const teamRanking = {};
+
+      // 1. Verileri takımlara göre grupla ve sıralama hesapla
+      reports.forEach(r => {
+        const t = String(r.team_number || 'Bilinmiyor');
+        
+        // Takım sıralaması için topla
+        if (!teamRanking[t]) {
+          teamRanking[t] = { count: 0, scoreSum: 0, hiveSum: 0, flowerSum: 0 };
+        }
+        teamRanking[t].count += 1;
+        teamRanking[t].scoreSum += (r.score || 0);
+        teamRanking[t].hiveSum += ((r.auto_hive || 0) + (r.tele_hive || 0));
+        teamRanking[t].flowerSum += ((r.auto_flower || 0) + (r.tele_flower || 0));
+
+        // Takım bazlı kayıt gruplaması için ekle
+        if (!teamsMap[t]) {
+          teamsMap[t] = [];
+        }
+        teamsMap[t].push(r);
+      });
+
+      // Takım Sıralaması Listesi
+      const sortedTeams = Object.entries(teamRanking).sort((a, b) => {
+        return (b[1].scoreSum / b[1].count) - (a[1].scoreSum / a[1].count);
+      });
+
+      document.getElementById('rankingList').innerHTML = sortedTeams.map(([team, st], i) => {
+        const avgScore = (st.scoreSum / st.count).toFixed(1);
+        const avgHive = (st.hiveSum / st.count).toFixed(1);
+        const avgFlower = (st.flowerSum / st.count).toFixed(1);
+        return `
+          <div class="report-card" style="align-items:center;">
+            <div>
+              <div class="report-header">#${i + 1} — Takım ${team} <span style="font-size:0.8rem; color:var(--text-muted);">(${st.count} maç)</span></div>
+              <div class="tag-row" style="margin-top:6px; margin-bottom:0;">
+                <span class="tag tag-hive">Ort. Hive: ${avgHive}</span>
+                <span class="tag tag-flower">Ort. Flower: ${avgFlower}</span>
+              </div>
+            </div>
+            <div style="font-size:1.25rem; font-weight:800; color:#93c5fd;">${avgScore} Puan</div>
+          </div>
+        `;
+      }).join('') || '<p>Kayıt bulunamadı.</p>';
+
+      // 2. Takım Gruplu "Tüm Kayıtlar" Listesi
+      const groupedHtml = Object.entries(teamsMap).map(([teamNum, teamReports]) => {
+        const reportsHtml = teamReports.map(item => {
+          const photos = item.photo_url ? item.photo_url.split(',').filter(Boolean) : [];
+          const photoHtml = photos.length > 0
+            ? `<div class="photo-grid">${photos.map(url => `<a href="${url}" target="_blank" class="photo-thumb"><img src="${url}" alt="Robot"></a>`).join('')}</div>`
+            : '';
+
+          return `
+            <div class="report-card" style="background: rgba(15, 23, 42, 0.5); margin-bottom: 10px;">
+              <div style="width:100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                  <span style="font-weight: 600; font-size: 0.95rem;">Maç #${item.match_number ?? '-'}</span>
+                  <span class="tag tag-score">${item.score} Puan</span>
+                </div>
+                <div class="report-meta">Scout: <strong>${item.scouted_by || '-'}</strong></div>
+                <div class="tag-row">
+                  <span class="tag tag-hive">Otonom: ${item.auto_hive || 0} Hive, ${item.auto_flower || 0} Flower</span>
+                  <span class="tag tag-flower">TeleOp: ${item.tele_hive || 0} Hive, ${item.tele_flower || 0} Flower</span>
+                </div>
+                <p style="font-size:0.9rem; color:var(--text-main); margin-top: 6px;">${item.notes || ''}</p>
+                ${photoHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="glass-card" style="margin-bottom: 20px; border-color: rgba(59, 130, 246, 0.2);">
+            <div style="font-size: 1.15rem; font-weight: 700; color: #93c5fd; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <span>🤖 Takım ${teamNum}</span>
+              <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd;">${teamReports.length} Rapor</span>
+            </div>
+            ${reportsHtml}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('allReportsList').innerHTML = groupedHtml || '<p style="text-align:center; color:var(--text-muted);">Kayıt bulunamadı.</p>';
+    }
+
+    loadAdminData();
+  </script>
+</body>
+</html>
